@@ -412,7 +412,7 @@ namespace DeviceProperty {
 
 LPVOID* CreateInstance(HANDLE hDev, SP_XINPUTINFO_DATA* unk1, const PROPERTYKEY* lpPropertyKey);
 void DestroyInstance(LPVOID* ppInstance);
-    
+
 }
 
 }
@@ -799,7 +799,7 @@ void UnregisterUtcEventProvider();
 /////////////////////////////////////////////////////
 // Anonymous namespace
 /////////////////////////////////////////////////////
-namespace { 
+namespace {
 
 DWORD XInputReturnCodeFromHRESULT(HRESULT hr)
 {
@@ -1108,7 +1108,7 @@ HRESULT ProcessEnumeratedDevice(DeviceInfo_t* pDevice)
 
     if (XInputInternal::DeviceInfo::IsDeviceInactive(pDevice))
         return 1;
-    
+
     hr = DeviceList::IsDevicePresent(pDevice);
     if (hr < 0)
         return hr;
@@ -1284,7 +1284,7 @@ namespace DevQuery {
 DevQuery_t* Create()
 {
     DevQuery_t* result = nullptr;
-    
+
     result = (DevQuery_t*)Utilities::MemAlloc(sizeof(DevQuery_t));
     if (result == nullptr)
         return nullptr;
@@ -1421,7 +1421,7 @@ void CALLBACK DevQueryCallbackProc(HDEVQUERY hQuery, LPVOID _pUserParam, PDEV_QU
 
     if (pCallbackData == nullptr || pUserParam == nullptr)
         return;
-    
+
     if (pCallbackData->bUnk1 == TRUE)
     {
         if (pUserParam->lpuiDeviceIdCount != nullptr)
@@ -1437,7 +1437,7 @@ void CALLBACK DevQueryCallbackProc(HDEVQUERY hQuery, LPVOID _pUserParam, PDEV_QU
                         CopySize = Length;
                     memcpy(pUserParam->lpDeviceId, lpDeviceId, 2 * CopySize);
                 }
-                *pUserParam->lpuiDeviceIdCount = Length;
+                *pUserParam->lpuiDeviceIdCount = (UINT)Length;
                 pUserParam->lpuiDeviceIdCount = nullptr;
             }
         }
@@ -1497,7 +1497,7 @@ void DestroyInstance(LPVOID* ppInstance)
 /////////////////////////////////////////////////////
 // DeviceEnum namespace
 /////////////////////////////////////////////////////
-namespace DeviceEnum { 
+namespace DeviceEnum {
 
 HRESULT Initialize()
 {
@@ -1513,7 +1513,7 @@ HRESULT Close()
         Utilities::MemFree(g_pDetailBuffer);
         g_pDetailBuffer = nullptr;
     }
-    
+
     g_dwDetailBufferSize = 0;
     return S_OK;
 }
@@ -1541,7 +1541,7 @@ HRESULT GetDeviceOnPort(DWORD dwUserIndex, DeviceInfo_t** ppDevice, bool rescan)
 /////////////////////////////////////////////////////
 // XInputInternal::DeviceInfo namespace
 /////////////////////////////////////////////////////
-namespace XInputInternal { 
+namespace XInputInternal {
 namespace DeviceInfo {
 namespace Enabled {
 
@@ -1653,7 +1653,7 @@ DeviceInfo_t* Create(HANDLE hDevice, LPCWSTR lpDevicePath)
         hSourceProcessHandle = GetCurrentProcess();
         if (DuplicateHandle(hSourceProcessHandle, hDevice, hSourceProcessHandle, &pDevice->hDevice, 0, FALSE, DUPLICATE_SAME_ACCESS))
         {
-            pDevice->dwDevicePathSize = wcslen(lpDevicePath) + 1;
+            pDevice->dwDevicePathSize = (DWORD)(wcslen(lpDevicePath) + 1);
             pDevice->lpDevicePath = (LPWSTR)Utilities::MemAlloc((pDevice->dwDevicePathSize + 1) * sizeof(WCHAR));
             if (pDevice->lpDevicePath)
             {
@@ -1770,7 +1770,7 @@ HRESULT PowerOffController(DeviceInfo_t* pDevice, void* pParams, DWORD reserved)
 {
     if (IsDeviceInactive(pDevice))
         return E_FAIL;
-        
+
     return DriverComm::PowerOffController(pDevice);
 }
 
@@ -1846,7 +1846,7 @@ HRESULT GetAudioDevice(DeviceInfo_t* pDevice, void* pParams, DWORD reserved)
         {
             LPCWSTR pDevicePath = (LPCWSTR)*ppDeviceData;
             bool match;
-            DWORD PathLength = wcslen(pDevicePath);
+            DWORD PathLength = (DWORD)wcslen(pDevicePath);
             match = (PathLength >= 27 && _wcsnicmp(pDevicePath, StrDeviceId, 27) == 0);
             DeviceProperty::DestroyInstance(ppDeviceData);
 
@@ -1900,7 +1900,7 @@ HRESULT GetBatteryInformation(DeviceInfo_t* pDevice, void* pParams, DWORD reserv
 HRESULT GetCapabilities(DeviceInfo_t* pDevice, void* pParams, DWORD reserved)
 {
     GetCapabilitiesApiParam_t* pApiParam = (GetCapabilitiesApiParam_t*)pParams;
-    
+
     if (IsDeviceInactive(pDevice))
         return E_FAIL;
 
@@ -1929,7 +1929,7 @@ HRESULT WaitForGuideButton(DeviceInfo_t* pDevice, void* pParams, DWORD reserved)
         return E_FAIL;
     }
 
-    if (pDevice->hGuideWait == INVALID_HANDLE_VALUE && 
+    if (pDevice->hGuideWait == INVALID_HANDLE_VALUE &&
         (pDevice->hGuideWait = CreateFileW(pDevice->lpDevicePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, 0)) == INVALID_HANDLE_VALUE)
     {
         return E_FAIL;
@@ -1983,7 +1983,7 @@ HRESULT GetDeviceUSBIds(DeviceInfo_t* pDevice, void* pParams, DWORD reserved)
 
     if (IsDeviceInactive(pDevice))
         return E_FAIL;
-    
+
     *pApiParam->pVendorId = pDevice->vendorId;
     *pApiParam->pProductId = pDevice->productId;
     *pApiParam->pInputId = pDevice->inputId;
@@ -2005,7 +2005,7 @@ HRESULT Initialize()
     g_pDeviceList = (DeviceInfo_t**)Utilities::MemAlloc(InitialDeviceListSize * sizeof(DeviceInfo_t*));
     if (g_pDeviceList == nullptr)
         return E_FAIL;
-    
+
     g_dwDeviceListSize = InitialDeviceListSize;
     g_pBusDeviceList = (DeviceInfo_t**)Utilities::MemAlloc(BusDeviceListSize * sizeof(DeviceInfo_t*));
     if (g_pBusDeviceList == nullptr)
@@ -2188,7 +2188,7 @@ BOOL IsDeviceOnPort(DWORD dwUserIndex)
 {
     if (dwUserIndex < g_dwDeviceListSize )
         return g_pDeviceList[dwUserIndex] == nullptr;
-    
+
     return TRUE;
 }
 
@@ -2467,7 +2467,7 @@ HRESULT GetCapabilities(DeviceInfo_t* pDevice, XINPUT_CAPABILITIES_EX* pCapabili
         if (hr >= 0)
             TranslateCapabilities(&OutBuffer, pCapabilitiesEx);
     }
-    
+
 
     return hr;
 }
@@ -2530,7 +2530,7 @@ HRESULT GetBatteryInformation(DeviceInfo_t* pDevice, BYTE DeviceType, XINPUT_BAT
         InBuffer.XUSBVersion = XUSB_VERSION_1_2;
         InBuffer.DeviceIndex = pDevice->dwUserIndex;
         InBuffer.DeviceType = DeviceType;
-        
+
         ZeroMemory(&OutBuffer, sizeof(GamepadBatteryInformation0102));
 
         hr = SendReceiveIoctl(pDevice->hDevice, Protocol::IOCTL_XINPUT_GET_BATTERY_INFORMATION, &InBuffer, sizeof(InGamepadBatteryInformation0102), &OutBuffer, sizeof(GamepadBatteryInformation0102), nullptr);
@@ -2703,13 +2703,15 @@ HRESULT CancelGuideButtonWait(DeviceInfo_t* pDevice)
 }
 
 namespace SetupDiWrapper {
+    // DevObj[XXX]() are not XP-compatible, and are called by SetupDi[XXX]
 
 HANDLE CreateDeviceInfoList()
 {
     if (g_pfnCreateDeviceInfoList != nullptr)
         return g_pfnCreateDeviceInfoList(nullptr, nullptr, nullptr, nullptr, nullptr);
 
-    return DevObjCreateDeviceInfoList(nullptr, nullptr, nullptr, nullptr, nullptr);
+    //return DevObjCreateDeviceInfoList(nullptr, nullptr, nullptr, nullptr, nullptr);
+    return SetupDiCreateDeviceInfoList(NULL, NULL);
 }
 
 BOOL GetClassDevs(HANDLE hDev, const GUID* pGuid, LPCWSTR pDeviceID, DWORD Flags)
@@ -2717,7 +2719,9 @@ BOOL GetClassDevs(HANDLE hDev, const GUID* pGuid, LPCWSTR pDeviceID, DWORD Flags
     if (g_pfnGetClassDevs)
         return g_pfnGetClassDevs(hDev, pGuid, pDeviceID, Flags, nullptr, 0);
 
-    return DevObjGetClassDevs(hDev, pGuid, pDeviceID, Flags, nullptr, 0);
+//    return DevObjGetClassDevs(hDev, pGuid, pDeviceID, Flags, nullptr, 0);
+    return SetupDiGetClassDevsExW(pGuid, pDeviceID, NULL,
+        Flags, hDev, NULL, NULL) != INVALID_HANDLE_VALUE;
 }
 
 BOOL EnumDeviceInfo(HANDLE DeviceInfoSet, DWORD MemberIndex, PDO_DEVINFO_DATA DeviceInfoData)
@@ -2725,15 +2729,22 @@ BOOL EnumDeviceInfo(HANDLE DeviceInfoSet, DWORD MemberIndex, PDO_DEVINFO_DATA De
     if (g_pfnEnumDeviceInfo)
         return g_pfnEnumDeviceInfo(DeviceInfoSet, MemberIndex, DeviceInfoData);
 
-    return DevObjEnumDeviceInfo(DeviceInfoSet, MemberIndex, DeviceInfoData);
+//    return DevObjEnumDeviceInfo(DeviceInfoSet, MemberIndex, DeviceInfoData);
+    return SetupDiEnumDeviceInfo(DeviceInfoSet, MemberIndex,
+         (PSP_DEVINFO_DATA)DeviceInfoData);
 }
-
+#pragma comment(lib, "setupapi.lib")
 BOOL EnumDeviceInterfaces(HANDLE hDev, PDO_DEVINFO_DATA DeviceInfoData, const GUID* InterfaceClassGuid, DWORD MemberIndex, PDO_DEVICE_INTERFACE_DATA DeviceInterfaceData)
 {
     if (g_pfnEnumDeviceInterfaces)
         return g_pfnEnumDeviceInterfaces(hDev, nullptr, &Protocol::XUSB_INTERFACE_CLASS_GUID, MemberIndex, DeviceInterfaceData);
 
-    return DevObjEnumDeviceInterfaces(hDev, nullptr, &Protocol::XUSB_INTERFACE_CLASS_GUID, MemberIndex, DeviceInterfaceData);
+    if(SetupDiEnumDeviceInterfaces(hDev, nullptr, &Protocol::XUSB_INTERFACE_CLASS_GUID, MemberIndex,
+        (PSP_DEVICE_INTERFACE_DATA)DeviceInterfaceData) == FALSE)
+    {
+        return FALSE;
+    }
+    return TRUE;
 }
 
 BOOL GetDeviceInterfaceDetail(HANDLE hDev, PDO_DEVICE_INTERFACE_DATA DeviceInterfaceData, PDO_DEVICE_INTERFACE_DETAIL_DATA DeviceInterfaceDetailData, DWORD DeviceInterfaceDetailDataSize, PDWORD RequiredSize)
@@ -2741,15 +2752,18 @@ BOOL GetDeviceInterfaceDetail(HANDLE hDev, PDO_DEVICE_INTERFACE_DATA DeviceInter
     if (g_pfnGetDeviceInterfaceDetail)
         return g_pfnGetDeviceInterfaceDetail(hDev, DeviceInterfaceData, DeviceInterfaceDetailData, DeviceInterfaceDetailDataSize, RequiredSize, nullptr);
 
-    return DevObjGetDeviceInterfaceDetail(hDev, DeviceInterfaceData, DeviceInterfaceDetailData, DeviceInterfaceDetailDataSize, RequiredSize, nullptr);
+//    return DevObjGetDeviceInterfaceDetail(hDev, DeviceInterfaceData, DeviceInterfaceDetailData, DeviceInterfaceDetailDataSize, RequiredSize, nullptr);
+    return SetupDiGetDeviceInterfaceDetailW(hDev, (PSP_DEVICE_INTERFACE_DATA)DeviceInterfaceData, (PSP_DEVICE_INTERFACE_DETAIL_DATA_W)DeviceInterfaceDetailData,
+        DeviceInterfaceDetailDataSize, RequiredSize, nullptr);
 }
 
 BOOL DestroyDeviceInfoList(HANDLE hDeviceInfoList)
 {
     if (g_pfnDestroyDeviceInfoList )
         return g_pfnDestroyDeviceInfoList(hDeviceInfoList);
-    
-    return DevObjDestroyDeviceInfoList(hDeviceInfoList);
+
+    //return DevObjDestroyDeviceInfoList(hDeviceInfoList);
+    return SetupDiDestroyDeviceInfoList(hDeviceInfoList);
 }
 
 BOOL GetDeviceProperty(HANDLE DeviceInfoSet, PDO_DEVINFO_DATA DeviceInfoData, CONST DEVPROPKEY* PropertyKey, DEVPROPTYPE* PropertyType, LPVOID PropertyBuffer, DWORD PropertyBufferSize, PDWORD RequiredSize)
@@ -2757,7 +2771,10 @@ BOOL GetDeviceProperty(HANDLE DeviceInfoSet, PDO_DEVINFO_DATA DeviceInfoData, CO
     if (g_pfnGetDeviceProperty)
         return g_pfnGetDeviceProperty(DeviceInfoSet, DeviceInfoData, PropertyKey, PropertyType, PropertyBuffer, PropertyBufferSize, RequiredSize, 0);
 
-    return DevObjGetDeviceProperty(DeviceInfoSet, DeviceInfoData, PropertyKey, PropertyType, PropertyBuffer, PropertyBufferSize, RequiredSize, 0);
+//    return DevObjGetDeviceProperty(DeviceInfoSet, DeviceInfoData, PropertyKey, PropertyType, PropertyBuffer, PropertyBufferSize, RequiredSize, 0);
+    return SetupDiGetDeviceRegistryPropertyW(DeviceInfoSet, (PSP_DEVINFO_DATA)DeviceInfoData,
+        SPDRP_CLASS, PropertyType, (PBYTE)PropertyBuffer, PropertyBufferSize,
+        RequiredSize);
 }
 
 }//namespace SetupDiWrapper
@@ -3039,7 +3056,7 @@ HRESULT ProcessAPIRequest(DWORD dwUserIndex, HRESULT(*pfn_ApiAction)(DeviceInfo_
             hr = 1; // NOT_CONNECTED
             break;
         }
-    
+
         // We removed the old device, retry in case a new device has been plugged-in
         retry = TRUE;
     }
@@ -3057,7 +3074,7 @@ void EnableCommunications(BOOL bEnabled)
         return;
 
     g_IsCommunicationEnabled = bEnabled;
-    
+
     XInputInternal::DeviceInfo::OnEnableSettingChanged(bEnabled);
 
     for (DWORD dwUserIndex = 0; dwUserIndex < XUSER_MAX_COUNT; ++dwUserIndex)
@@ -3245,7 +3262,7 @@ DWORD Controller_CalculateKeyFromThumbPos(SHORT base, SHORT X, SHORT Y)
 
     if (Y < -20000)
     {
-        
+
         if (X > 20000)
             return base + 6;
 
@@ -3296,7 +3313,7 @@ HRESULT InitializeOverrides()
     LoadOverride(XInputGetAudioDeviceIds);
     LoadOverride(XInputGetBatteryInformation);
     LoadOverride(XInputGetKeystroke);
-        
+
 #undef LoadOverride
 
     return S_OK;
@@ -3584,7 +3601,7 @@ DWORD WINAPI OpenXInputGetAudioDeviceIds(_In_ DWORD dwUserIndex, _Out_writes_opt
     GetAudioDeviceIdApiParam_t apiParam;
 
     if(dwUserIndex >= XUSER_MAX_COUNT ||
-        (pRenderCount == nullptr && pCaptureCount == nullptr) || 
+        (pRenderCount == nullptr && pCaptureCount == nullptr) ||
         (pRenderDeviceId != nullptr && pRenderCount == nullptr) ||
         (pCaptureDeviceId != nullptr && pCaptureCount == nullptr))
     {

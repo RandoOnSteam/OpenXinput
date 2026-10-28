@@ -19,7 +19,7 @@
 
 HDEVINFO WINAPI DevObjCreateDeviceInfoList(HANDLE a, LPCWSTR UNCServerName, PVOID c, PVOID d, PVOID e)
 {
-    return 0xCDCDCDCD;
+    return (HDEVINFO)(SIZE_T)0xCDCDCDCD;
 }
 
 BOOL   WINAPI DevObjGetClassDevs(HANDLE h, const GUID* pGuid, LPCWSTR pDeviceID, DWORD Flags, LPCWSTR str, SIZE_T len)

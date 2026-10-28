@@ -112,7 +112,7 @@ void gotoxy(const int x, const int y)
 {
     CONSOLE_SCREEN_BUFFER_INFOEX Infos;
     HANDLE hConsole;
-    
+
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleInfos(hConsole , &Infos);
 
@@ -129,7 +129,7 @@ void clrscr()
 {
     DWORD NumberOfCharWritten = 0;
     COORD Coordinates;
-    
+
     CONSOLE_SCREEN_BUFFER_INFOEX Infos;
     HANDLE hConsole;
 
@@ -137,7 +137,7 @@ void clrscr()
     GetConsoleInfos(hConsole, &Infos);
 
     Coordinates.X = 0;
-    
+
     for (Coordinates.Y = 0; Coordinates.Y < Infos.dwSize.Y; Coordinates.Y++)
     {
         FillConsoleOutputCharacterA(hConsole, ' ', Infos.dwSize.X, Coordinates, &NumberOfCharWritten);
@@ -152,7 +152,7 @@ BOOL setcursortype(unsigned int Type)
     CONSOLE_CURSOR_INFO CursorInfo;
 
     HConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    
+
     switch (Type)
     {
         case 0:// Hide
@@ -170,7 +170,7 @@ BOOL setcursortype(unsigned int Type)
             CursorInfo.bVisible = 1;
             break;
     }
-    
+
     return SetConsoleCursorInfo(HConsole, &CursorInfo);
 }
 
@@ -218,7 +218,7 @@ BOOL textmode(const int x, const int y)
 {
     HANDLE hConsole;
     SMALL_RECT ConsoleWindow;
-    COORD coords = { x, y };
+    COORD coords = { (SHORT)x, (SHORT)y };
 
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -320,7 +320,7 @@ const char* print_keystroke_flags(WORD flags)
         case (XINPUT_KEYSTROKE_KEYUP | XINPUT_KEYSTROKE_REPEAT)  : return "KEYUP|KEYREPEAT";
         case (XINPUT_KEYSTROKE_KEYDOWN | XINPUT_KEYSTROKE_KEYUP | XINPUT_KEYSTROKE_REPEAT)  : return "KEYDOWN|KEYUP|KEYREPEAT";
     }
-    
+
     return "NONE";
 }
 
@@ -391,7 +391,7 @@ void test_keystroke()
                         run |= 2;
                     break;
             }
-            
+
             print_keystroke(state);
         }
     }
@@ -438,7 +438,7 @@ void BuildDeviceConsoleOutput(XInputDevice_t& device)
     sprintf_s(device.consoleBuffer[DEVICE_STATE_RIGHTTHUMBX]          , "  - Right X  : %hd" , device.state.XinputState.Gamepad.sThumbRX);
     sprintf_s(device.consoleBuffer[DEVICE_STATE_RIGHTTHUMBY]          , "  - Right Y  : %hd" , device.state.XinputState.Gamepad.sThumbRY);
     // Custom state
-    sprintf_s(device.consoleBuffer[DEVICE_STATE_EXTRA_SHARE]          , "  - Share    : %hhu", device.state.GamepadExtras.dwExtraButtons & OPENXINPUT_GAMEPAD_EXTRAS_SHARE);
+    sprintf_s(device.consoleBuffer[DEVICE_STATE_EXTRA_SHARE]          , "  - Share    : %hhu", device.state.XinputSystemButtons.ExtraSystemButtons & XINPUT_GAMEPAD_EXTRAS_SHARE);
 }
 
 void PrintDeviceConsoleOutput(XInputDevice_t& device)
@@ -449,7 +449,7 @@ void PrintDeviceConsoleOutput(XInputDevice_t& device)
     DWORD Written;
 
     COORD coord;
-    coord.X = MAX_DEVICE_LINE_WIDTH * device.deviceIndex;
+    coord.X = (SHORT)(MAX_DEVICE_LINE_WIDTH * device.deviceIndex);
 
     WORD color = getcolor();
 
@@ -512,7 +512,7 @@ void OnDeviceDisconnect(XInputDevice_t& device)
 {
     device.connected = false;
     memset(&device, 0, sizeof(device));
-    
+
     OnDeviceInfoChange(device);
 }
 
@@ -520,11 +520,12 @@ bool DeviceStateChanged(XInputDevice_t& device)
 {
     // Don't test device.oldState in its entirety because some trash devices always send new XUSB packets even if there is no change.
     return memcmp(&device.oldState.XinputState.Gamepad, &device.state.XinputState.Gamepad, sizeof(device.state.XinputState.Gamepad)) != 0 ||
-        memcmp(&device.oldState.GamepadExtras, &device.state.GamepadExtras, sizeof(device.state.GamepadExtras)) != 0;
+        memcmp(&device.oldState.XinputSystemButtons, &device.state.XinputSystemButtons, sizeof(device.state.XinputSystemButtons)) != 0;
 }
 
 int main(int argc, char* argv[])
 {
+    DWORD i;
 #ifdef OPENXINPUT_BUILD_SHARED
     HMODULE hXinput = GetModuleHandleW(L"Xinput1_4.dll");
     if (hXinput != NULL)
@@ -548,7 +549,7 @@ int main(int argc, char* argv[])
     setcursortype(0);
     textmode(MAX_DEVICE_LINE_WIDTH * XinputMaxControllerCount, DEVICE_MAX_CONSOLE_LINES);
 
-    for (int i = 0; i < XinputMaxControllerCount; ++i)
+    for (i = 0; i < XinputMaxControllerCount; ++i)
     {
         devices[i].deviceIndex = i;
         BuildDeviceConsoleOutput(devices[i]);
@@ -557,7 +558,7 @@ int main(int argc, char* argv[])
 
     while (1)
     {
-        for (int i = 0; i < XinputMaxControllerCount; ++i)
+        for (i = 0; i < XinputMaxControllerCount; ++i)
         {
             XInputDevice_t& device = devices[i];
             if ((pOpenXInputGetStateFull == nullptr ? OpenXInputGetStateEx(i, &device.state.XinputState) : pOpenXInputGetStateFull(i, &device.state)) == ERROR_SUCCESS)
